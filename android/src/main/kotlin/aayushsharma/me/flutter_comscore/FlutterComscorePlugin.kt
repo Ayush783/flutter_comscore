@@ -11,6 +11,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 
 /** FlutterComscorePlugin */
 class FlutterComscorePlugin: FlutterPlugin, MethodCallHandler {
@@ -32,24 +33,36 @@ class FlutterComscorePlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "setup") {
-      val args = call.arguments as String?
-      Log.e(LOGNAME, "starting comscore: $args")
-      val startComscoreArgs = Json.decodeFromString<StartComscoreArgs>(args?:"")
+    val args = call.arguments as String?
+    when(call.method) {
+      "setup" -> {
+        Log.e(LOGNAME, "starting comscore: $args")
+        val startComscoreArgs = Json.decodeFromString<StartComscoreArgs>(args?:"")
 
-      startComscore(applicationContext, startComscoreArgs)
-      
-      result.success(null)
-    } else if(call.method == "notifyViewEvent") {
-      try {
-        val data = call.arguments as HashMap<String, Any>
-        notifyViewEvent(data["category"] as String, data["eventData"] as HashMap<String, String>?)
-      } catch(e: Exception) {
-        Log.e(LOGNAME, "notifyViewEvent error: $e")
-        return result.error(LOGNAME, e.toString(), null)
+        startComscore(applicationContext, startComscoreArgs)
+
+        result.success(null)
       }
-    } else {
-      result.notImplemented()
+      "notifyViewEvent" -> {
+        try {
+          val data = Json.decodeFromString<NotifyViewEventArgs>(args?:"")
+          notifyViewEvent(data.category, data.eventData)
+        } catch(e: Exception) {
+          Log.e(LOGNAME, "notifyViewEvent error: $e")
+          result.error(LOGNAME, e.toString(), null)
+        }
+      }
+      "setUserConsent" -> {
+        try {
+          setUserConsent(args?.toInt() ?: 0)
+        } catch (e: Exception) {
+          Log.e(LOGNAME, e.toString())
+          result.error(LOGNAME, e.toString(), null)
+        }
+      }
+      "notifyBackgroundUXStart" -> notifyUxActive()
+      "notifyBackgroundUXStop" -> notifyUxInactive()
+      else -> result.notImplemented()
     }
   }
 
@@ -100,7 +113,7 @@ class FlutterComscorePlugin: FlutterPlugin, MethodCallHandler {
     try {
       Analytics.notifyUxActive()
     } catch (e: Exception) {
-      Log.e(LOGNAME, "Error starting comscore: $e")
+      Log.e(LOGNAME, "Error notifyUxActive comscore: $e")
     }
   }
 
@@ -108,7 +121,7 @@ class FlutterComscorePlugin: FlutterPlugin, MethodCallHandler {
     try {
       Analytics.notifyUxInactive()
     } catch (e: Exception) {
-      Log.e(LOGNAME, "Error starting comscore: $e")
+      Log.e(LOGNAME, "Error notifyUxInactive comscore: $e")
     }
   }
 
@@ -119,7 +132,7 @@ class FlutterComscorePlugin: FlutterPlugin, MethodCallHandler {
       labels["ns_category"] = category
       Analytics.notifyViewEvent(labels)
     } catch (e: Exception) {
-      Log.e(LOGNAME, "Error starting comscore: $e")
+      Log.e(LOGNAME, "Error sending notifyview event: $e")
     }
   }
 

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'flutter_comscore_platform_interface.dart';
 
 class FlutterComscore {
@@ -13,10 +15,30 @@ class FlutterComscore {
       {int? userConsent,
       bool isChildDirected = false,
       bool debug = false}) async {
-    await FlutterComscorePlatform.instance.startComscore(
+    FlutterComscorePlatform.instance.startComscore(
       userConsent: userConsent,
       isChildDirected: isChildDirected,
       debug: debug,
     );
+  }
+
+  static Future<void> notifyViewEvent(
+      {required String category, Map<String, String>? eventData}) async {
+    FlutterComscorePlatform.instance.notifyViewEvent(
+      category: category,
+      eventData: eventData,
+    );
+  }
+
+  static Future<void> notifyBackgroundUxStart() async {
+    FlutterComscorePlatform.instance.notifyBackgroundUxStart();
+  }
+
+  static Future<void> notifyBackgroundUxStop() async {
+    FlutterComscorePlatform.instance.notifyBackgroundUxStop();
+  }
+
+  static Future<void> setUserConsent({required int userConsent}) async {
+    FlutterComscorePlatform.instance.setUserConsent(userConsent: userConsent);
   }
 }

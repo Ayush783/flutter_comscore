@@ -27,4 +27,21 @@ abstract class FlutterComscorePlatform extends PlatformInterface {
       {int? userConsent, bool isChildDirected = false, bool debug = false}) {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  Future<void> notifyViewEvent(
+      {required String category, Map<String, String>? eventData}) {
+    throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<void> notifyBackgroundUxStart() {
+    throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<void> notifyBackgroundUxStop() {
+    throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<void> setUserConsent({required int userConsent}) {
+    throw UnimplementedError('platformVersion() has not been implemented.');
+  }
 }

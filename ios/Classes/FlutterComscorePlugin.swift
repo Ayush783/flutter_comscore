@@ -26,6 +26,38 @@ public class FlutterComscorePlugin: NSObject, FlutterPlugin {
             
             result(nil)
         case "notifyViewEvent":
+            guard let args = call.arguments as? String else {
+                result("Empty arguments")
+                return
+            }
+            
+            do {
+                let notifyViewEventArgs = try JSONDecoder().decode(NotifyViewEventArgs.self, from: Data(args.utf8))
+                notifyViewEvent(category: notifyViewEventArgs.category, eventData: notifyViewEventArgs.eventData)
+            } catch {
+                result("Error comscore notifyingview event: \(error)")
+                return
+            }
+            
+            result(nil)
+        case "notifyBackgroundUXStart":
+            notifyBackgroundUXStart()
+            result(nil)
+        case "notifyBackgroundUXStop":
+            notifyBackgroundUXStop()
+            result(nil)
+        case "setUserConsent":
+            guard let args = call.arguments as? String else {
+                result("Empty arguments")
+                return
+            }
+            
+            do {
+                try setUserConsent(userConsent: args)
+            } catch {
+                result("Error comscore notifyingview event: \(error)")
+                return
+            }
             result(nil)
         default:
             result(FlutterMethodNotImplemented)
@@ -58,7 +90,33 @@ public class FlutterComscorePlugin: NSObject, FlutterPlugin {
         }
         
         SCORAnalytics.start()
+    }
+    
+    private func notifyViewEvent(category: String, eventData: [String: String]?) {
+        var labels: [String: String] = [:]
+        labels["ns_category"] = category
+        if let eventData {
+            labels.merge(eventData) { (current, new) in new }
+        }
         
+        SCORAnalytics.notifyViewEvent(withLabels: labels)
+    }
+    
+    private func notifyBackgroundUXStart() {
+        SCORAnalytics.notifyUxActive()
+    }
+    
+    private func notifyBackgroundUXStop() {
+        SCORAnalytics.notifyUxInactive()
+    }
+    
+    private func setUserConsent(userConsent: String) throws {
+        let infoDict = Bundle.main.infoDictionary
+        guard let infoDict, let pubId = infoDict["FLUTTER_COMSCORE_PUBLISHER_ID"] as? String else {
+            throw ComscoreError.pubIdNotFound
+        }
+        
+        SCORAnalytics.configuration().publisherConfiguration(withPublisherId: pubId).setPersistentLabelWithName("cs_ucfr", value: userConsent)
     }
     
     enum ComscoreError: Error {
