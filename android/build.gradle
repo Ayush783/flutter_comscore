@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.0' // Use your Kotlin version
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.0'
 }
 
 group = "aayushsharma.me.flutter_comscore"
@@ -28,6 +28,7 @@ allprojects {
 
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
+apply plugin: "kotlinx-serialization"
 
 android {
     if (project.android.hasProperty("namespace")) {
